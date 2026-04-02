@@ -32,7 +32,8 @@
       "Bash(ssh-keygen -l -f ~/.ssh/id_ed25519.pub)",
       "Read(//Users/dry/**)",
       "Bash(ssh -T git@github.com)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_soyFgU5f7lXi@ep-super-wildflower-aneamxw7.c-6.us-east-1.aws.neon.tech/neondb?sslmode=require\" npx prisma db push 2>&1)"
     ]
   }
 }

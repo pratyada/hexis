@@ -13,6 +13,7 @@ import {
   Calendar,
   Settings,
   ChevronRight,
+  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { JWTPayload } from '@/lib/auth'
@@ -65,21 +66,43 @@ const navItems = [
   },
 ]
 
-export function Sidebar({ session }: { session: JWTPayload }) {
+export function Sidebar({
+  session,
+  isOpen,
+  onClose,
+}: {
+  session: JWTPayload
+  isOpen?: boolean
+  onClose?: () => void
+}) {
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 hexis-sidebar flex flex-col h-full border-r border-white/5 flex-shrink-0">
+    <aside
+      className={cn(
+        'fixed inset-y-0 left-0 z-50 w-64 hexis-sidebar flex flex-col h-full border-r border-white/5 flex-shrink-0',
+        'transition-transform duration-300 ease-in-out',
+        'lg:relative lg:translate-x-0',
+        isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      )}
+    >
       {/* Logo */}
       <div className="p-6 border-b border-white/5">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-hexis-gold/15 rounded-lg flex items-center justify-center flex-shrink-0">
             <Scale className="w-5 h-5 text-hexis-gold" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-white font-bold text-lg leading-none font-serif tracking-wide">HEXIS</p>
             <p className="text-hexis-gold/70 text-[10px] tracking-widest uppercase mt-0.5">Law Firm</p>
           </div>
+          {/* Close button — mobile only */}
+          <button
+            onClick={onClose}
+            className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -99,6 +122,7 @@ export function Sidebar({ session }: { session: JWTPayload }) {
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={onClose}
                     className={cn(
                       'sidebar-link group',
                       isActive && 'active'

@@ -122,7 +122,7 @@ export default function NewClientPage() {
         {/* Personal Info */}
         <div className="hexis-card p-6 mb-6">
           <h2 className="section-title">Personal Information</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="form-label">Full Name (English) *</label>
               <input name="name" value={form.name} onChange={handleChange} className="form-input" required />
@@ -159,7 +159,7 @@ export default function NewClientPage() {
         {/* Contact */}
         <div className="hexis-card p-6 mb-6">
           <h2 className="section-title">Contact Details</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="form-label">Mobile Number *</label>
               <input name="phone" value={form.phone} onChange={handleChange} className="form-input" required placeholder="+91-9999999999" />
@@ -178,7 +178,7 @@ export default function NewClientPage() {
         {/* Address */}
         <div className="hexis-card p-6 mb-6">
           <h2 className="section-title">Address</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="form-label">Street Address</label>
               <input name="address" value={form.address} onChange={handleChange} className="form-input" />
@@ -203,7 +203,7 @@ export default function NewClientPage() {
         {/* Identity */}
         <div className="hexis-card p-6 mb-6">
           <h2 className="section-title">Identity Documents</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="form-label">PAN Card Number</label>
               <input name="pan" value={form.pan} onChange={handleChange} className="form-input" placeholder="ABCDE1234F" maxLength={10} />

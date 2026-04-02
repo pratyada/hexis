@@ -111,12 +111,12 @@ export default async function DashboardPage() {
   return (
     <div>
       {/* Header */}
-      <div className="page-header flex items-center justify-between">
+      <div className="page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="page-title">Good {getGreeting()}, {session?.name.split(' ')[0]} 👋</h1>
           <p className="page-subtitle">Here&apos;s what&apos;s happening at HEXIS Law today.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <Link href="/drafting/new" className="btn-gold">
             <Scale className="w-4 h-4" />
             New Draft
@@ -129,7 +129,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
         })}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Upcoming Hearings */}
         <div className="lg:col-span-2">
           <div className="hexis-card p-6">

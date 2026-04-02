@@ -91,7 +91,7 @@ export default function NewCasePage() {
         {/* Case Details */}
         <div className="hexis-card p-6 mb-6">
           <h2 className="section-title">Case Information</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="form-label">Case Title *</label>
               <input
@@ -170,7 +170,7 @@ export default function NewCasePage() {
         {/* Court Details */}
         <div className="hexis-card p-6 mb-6">
           <h2 className="section-title">Court Details</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="form-label">Court Name *</label>
               <input
@@ -214,7 +214,7 @@ export default function NewCasePage() {
         {/* Parties */}
         <div className="hexis-card p-6 mb-6">
           <h2 className="section-title">Parties</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="form-label">Petitioner / Plaintiff *</label>
               <input
@@ -259,7 +259,7 @@ export default function NewCasePage() {
         {/* Client & Fees */}
         <div className="hexis-card p-6 mb-6">
           <h2 className="section-title">Client & Retainer</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="form-label">Client Code</label>
               <input
