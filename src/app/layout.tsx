@@ -3,9 +3,38 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'HEXIS Law — Legal Management System',
-  description: 'Internal CRM for HEXIS Law Firm, New Delhi',
+  description: 'AI-powered legal management for Indian law firms. Intelligent drafting with Vaakil AI, NIC eCourts integration, and smart document vault — built for Delhi advocates.',
+  metadataBase: new URL('https://hexis-nu.vercel.app'),
+  openGraph: {
+    title: 'HEXIS Law — Legal Management System',
+    description: 'AI-powered legal management for Indian law firms. Intelligent drafting with Vaakil AI, NIC eCourts integration, and smart document vault — built for Delhi advocates.',
+    url: 'https://hexis-nu.vercel.app',
+    siteName: 'HEXIS Law',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'HEXIS Law — Legal Management System',
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HEXIS Law — Legal Management System',
+    description: 'AI-powered legal management for Indian law firms. Intelligent drafting, NIC eCourts integration, smart document vault.',
+    images: ['/opengraph-image'],
+  },
   icons: {
-    icon: '/favicon.ico',
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
+  robots: {
+    index: false,
+    follow: false,
   },
 }
 
