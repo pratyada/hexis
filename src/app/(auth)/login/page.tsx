@@ -246,15 +246,6 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <p className="text-xs text-gray-400 text-center">
-                Default credentials for testing:
-              </p>
-              <div className="mt-2 space-y-1 text-xs text-center text-gray-500">
-                <p><span className="font-medium">Owner:</span> owner@hexis.law / hexis@2024</p>
-                <p><span className="font-medium">Associate:</span> associate@hexis.law / hexis@2024</p>
-              </div>
-            </div>
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-6">
