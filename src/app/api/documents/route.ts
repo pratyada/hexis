@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma, Prisma } from '@/lib/prisma'
 import { getSessionFromRequest } from '@/lib/auth'
 import path from 'path'
 import { writeFile, mkdir } from 'fs/promises'
@@ -18,10 +18,10 @@ export async function GET(req: NextRequest) {
   if (caseId) where.caseId = caseId
   if (search) {
     where.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
-      { ocrText: { contains: search, mode: 'insensitive' } },
-      { aiSummary: { contains: search, mode: 'insensitive' } },
-      { tags: { contains: search, mode: 'insensitive' } },
+      { name: { contains: search, mode: Prisma.QueryMode.insensitive } },
+      { ocrText: { contains: search, mode: Prisma.QueryMode.insensitive } },
+      { aiSummary: { contains: search, mode: Prisma.QueryMode.insensitive } },
+      { tags: { contains: search, mode: Prisma.QueryMode.insensitive } },
     ]
   }
 

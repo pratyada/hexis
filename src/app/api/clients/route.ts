@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma, Prisma } from '@/lib/prisma'
 import { getSessionFromRequest } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
@@ -12,10 +12,10 @@ export async function GET(req: NextRequest) {
   const where = search
     ? {
         OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { phone: { contains: search, mode: 'insensitive' } },
-          { clientCode: { contains: search, mode: 'insensitive' } },
-          { email: { contains: search, mode: 'insensitive' } },
+          { name: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          { phone: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          { clientCode: { contains: search, mode: Prisma.QueryMode.insensitive } },
+          { email: { contains: search, mode: Prisma.QueryMode.insensitive } },
         ],
       }
     : {}
