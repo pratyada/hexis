@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s \"https://api.github.com/repos/musee-initialize/hotel-crm-frontend/contents/\")",
+      "Bash(curl -s \"https://api.github.com/repos/musee-initialize/hotel-crm-backend/contents/\")",
+      "Bash(npm --version)",
+      "Bash(docker --version)",
+      "Bash(docker compose:*)",
+      "Bash(brew list:*)",
+      "Bash(npx --version)",
+      "Read(//usr/local/bin/**)",
+      "Bash(npm list:*)",
+      "Bash(node -e \"console.log\\(process.version\\)\")",
+      "Bash(npm install:*)",
+      "Bash(npx prisma:*)",
+      "Bash(DATABASE_URL=\"file:./hexis.db\" npx prisma db push 2>&1)",
+      "Bash(DATABASE_URL=\"file:./hexis.db\" npx ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts 2>&1)",
+      "Bash(curl -s http://localhost:3002/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/login)",
+      "Bash(curl -s -X POST http://localhost:3002/api/auth/login -H \"Content-Type: application/json\" -d '{\"\"\"\"email\"\"\"\":\"\"\"\"owner@hexis.law\"\"\"\",\"\"\"\"password\"\"\"\":\"\"\"\"hexis@2024\"\"\"\"}' -c /tmp/hexis-cookies.txt -w \"\\\\nHTTP: %{http_code}\")",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -sv -X POST http://localhost:3002/api/auth/login -H \"Content-Type: application/json\" -d '{\"\"\"\"email\"\"\"\":\"\"\"\"owner@hexis.law\"\"\"\",\"\"\"\"password\"\"\"\":\"\"\"\"hexis@2024\"\"\"\"}')",
+      "Bash(curl -sv \"http://localhost:3002/dashboard\" -H \"Cookie: hexis-token=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJjbW5oY2g5NTcwMDAwMWIxMGZreDNsYnEwIiwiZW1haWwiOiJvd25lckBoZXhpcy5sYXciLCJuYW1lIjoiRmlybSBPd25lciIsInJvbGUiOiJPV05FUiIsImlhdCI6MTc3NTEyNjc1MSwiZXhwIjoxNzc1MTU1NTUxfQ.y7WNWwtjuUunnEB0zZ3gLbPITxZacXIAMMHu9tjqN5w\")",
+      "Bash(/Users/dry/Documents/sudo/hexis/start.sh:*)",
+      "Bash(chmod +x /Users/dry/Documents/sudo/hexis/start.sh)",
+      "Bash(git init:*)",
+      "Bash(git remote:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Environment variables (NEVER commit these)
+.env
+.env.local
+.env.*.local
+
+# Database (local SQLite — each instance has its own)
+prisma/hexis.db
+prisma/hexis.db-journal
+prisma/*.db
+prisma/*.db-journal
+
+# File uploads (local files)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
