@@ -1,4 +1,3 @@
-import { createWorker } from 'tesseract.js'
 import path from 'path'
 import fs from 'fs'
 
@@ -11,18 +10,19 @@ export interface OCRResult {
 export async function extractTextFromFile(filePath: string, language: string = 'en'): Promise<OCRResult> {
   const ext = path.extname(filePath).toLowerCase()
 
-  // For text-based documents, read directly
+  // For text files, read directly
   if (ext === '.txt') {
     const text = fs.readFileSync(filePath, 'utf-8')
     return { text, confidence: 100, language }
   }
 
-  // OCR for images and PDFs
-  const tesseractLang = language === 'hi' ? 'hin+eng' : 'eng+hin'
-
+  // Try Tesseract OCR — gracefully skip if unavailable (e.g. Vercel serverless)
   try {
+    const { createWorker } = await import('tesseract.js')
+    const tesseractLang = language === 'hi' ? 'hin+eng' : 'eng+hin'
+
     const worker = await createWorker(tesseractLang, 1, {
-      logger: () => {}, // suppress logs
+      logger: () => {},
     })
 
     const { data } = await worker.recognize(filePath)
@@ -34,12 +34,8 @@ export async function extractTextFromFile(filePath: string, language: string = '
       language,
     }
   } catch (error) {
-    console.error('OCR Error:', error)
-    return {
-      text: '',
-      confidence: 0,
-      language,
-    }
+    console.warn('OCR unavailable (expected on serverless):', error)
+    return { text: '', confidence: 0, language }
   }
 }
 

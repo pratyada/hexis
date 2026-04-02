@@ -14,9 +14,9 @@ export async function GET(req: NextRequest) {
   if (status && status !== 'ALL') where.status = status
   if (search) {
     where.OR = [
-      { caseTitle: { contains: search } },
-      { caseNumber: { contains: search } },
-      { cnrNumber: { contains: search } },
+      { caseTitle: { contains: search, mode: 'insensitive' } },
+      { caseNumber: { contains: search, mode: 'insensitive' } },
+      { cnrNumber: { contains: search, mode: 'insensitive' } },
     ]
   }
 

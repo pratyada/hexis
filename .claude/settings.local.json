@@ -25,7 +25,14 @@
       "Bash(chmod +x /Users/dry/Documents/sudo/hexis/start.sh)",
       "Bash(git init:*)",
       "Bash(git remote:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(ssh-keygen -l -f ~/.ssh/id_rsa.pub)",
+      "Bash(ssh-keygen -l -f ~/.ssh/id_ed25519.pub)",
+      "Read(//Users/dry/**)",
+      "Bash(ssh -T git@github.com)",
+      "Bash(git:*)"
     ]
   }
 }

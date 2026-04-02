@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npx prisma generate && npx prisma db push && next build",
+  "functions": {
+    "src/app/api/**": {
+      "maxDuration": 60
+    },
+    "src/app/api/documents/ocr/**": {
+      "maxDuration": 120
+    },
+    "src/app/api/drafting/generate/**": {
+      "maxDuration": 120
+    }
+  }
+}
