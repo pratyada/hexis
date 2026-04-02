@@ -1,10 +1,9 @@
 import { prisma } from '@/lib/prisma'
-import { getSession } from '@/lib/auth'
 import { formatDate, getDaysUntil, getUrgencyColor } from '@/lib/utils'
 import Link from 'next/link'
 import {
   Briefcase, Plus, Search, AlertTriangle, Calendar,
-  ChevronRight, Filter, RefreshCw
+  ChevronRight, RefreshCw
 } from 'lucide-react'
 
 interface SearchParams {
@@ -14,9 +13,8 @@ interface SearchParams {
   priority?: string
 }
 
-export default async function CasesPage({ searchParams }: { searchParams: SearchParams }) {
-  const session = await getSession()
-  const { status, type, search, priority } = searchParams
+export default async function CasesPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const { status, type, search, priority } = await searchParams
 
   const where: Record<string, unknown> = {}
   if (status && status !== 'ALL') where.status = status

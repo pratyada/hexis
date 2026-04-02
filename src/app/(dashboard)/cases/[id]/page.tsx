@@ -8,9 +8,10 @@ import {
   MapPin, Phone
 } from 'lucide-react'
 
-export default async function CaseDetailPage({ params }: { params: { id: string } }) {
+export default async function CaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const caseData = await prisma.case.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       client: true,
       lawyer: true,

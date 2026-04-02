@@ -4,9 +4,10 @@ import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { ArrowLeft, FileText, Sparkles, Download, Copy, Scale } from 'lucide-react'
 
-export default async function DraftDetailPage({ params }: { params: { id: string } }) {
+export default async function DraftDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const draft = await prisma.draft.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       case: { select: { id: true, caseTitle: true, caseNumber: true } },
       client: { select: { name: true } },
