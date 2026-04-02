@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     siteName: 'HEXIS Law',
     images: [
       {
-        url: '/opengraph-image',
+        url: 'https://hexis-nu.vercel.app/opengraph-image',
         width: 1200,
         height: 630,
         alt: 'HEXIS Law — Legal Management System',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'HEXIS Law — Legal Management System',
     description: 'AI-powered legal management for Indian law firms. Intelligent drafting, NIC eCourts integration, smart document vault.',
-    images: ['/opengraph-image'],
+    images: ['https://hexis-nu.vercel.app/opengraph-image'],
   },
   icons: {
     icon: '/favicon.svg',
