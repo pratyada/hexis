@@ -21,6 +21,7 @@ export default async function CalendarPage() {
       include: {
         case: {
           select: {
+            id: true,
             caseTitle: true,
             caseNumber: true,
             courtName: true,
