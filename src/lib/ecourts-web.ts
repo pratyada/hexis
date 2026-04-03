@@ -474,6 +474,155 @@ function parseDistrictHTML(html: string, cnr: string): WebCaseResult | null {
   return { caseDetails, hearings, orders, source: 'district' }
 }
 
+// ─── HC Services — search by Case Number + Type + Year ───────────────────────
+
+export interface HCCaseNumberParams {
+  court: string       // e.g. 'delhi', 'bombay', 'madras'
+  caseType: string    // e.g. 'W.P.(C)', 'CRL.M.C.', 'FAO'
+  caseNumber: string  // numeric part
+  year: string        // 4-digit year
+  benchCode?: string  // default '1'
+}
+
+async function hcSessionAndCaptcha(stateCode: string): Promise<{ jar: CookieJar; captchaText: string } | null> {
+  for (let attempt = 0; attempt < MAX_CAPTCHA_RETRIES; attempt++) {
+    const jar = new CookieJar()
+    try {
+      const initRes = await fetch(`${HC_BASE}/main.php`, {
+        headers: { ...BROWSER_HEADERS, Referer: 'https://hcservices.ecourts.gov.in/' },
+      })
+      jar.ingest(initRes.headers)
+      await delay(500)
+
+      const captchaRes = await fetch(`${HC_BASE}/securimage/securimage_show.php`, {
+        headers: {
+          ...BROWSER_HEADERS,
+          Cookie: jar.header(),
+          Referer: `${HC_BASE}/main.php`,
+          Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+          'X-Requested-With': '',
+        },
+      })
+      jar.ingest(captchaRes.headers)
+      const buf = Buffer.from(await captchaRes.arrayBuffer())
+      await delay(300)
+
+      const captchaText = await solveCaptcha(buf)
+      if (captchaText && captchaText.length >= 4) return { jar, captchaText }
+    } catch {
+      // continue
+    }
+    await delay(RETRY_DELAY_MS * (attempt + 1))
+  }
+  return null
+}
+
+export async function searchHCByCaseNumber(params: HCCaseNumberParams): Promise<WebCaseResult | null> {
+  const courtKey = params.court.substring(0, 2).toUpperCase()
+  const stateCode = HC_STATE_CODES[courtKey] || '7'
+
+  for (let attempt = 0; attempt < MAX_CAPTCHA_RETRIES; attempt++) {
+    const session = await hcSessionAndCaptcha(stateCode)
+    if (!session) continue
+    const { jar, captchaText } = session
+
+    try {
+      const body = new URLSearchParams({
+        state_code: stateCode,
+        bench_code: params.benchCode || '1',
+        action_code: 'showRecords',
+        search_type: 'case_no',
+        case_type: params.caseType,
+        search_case_no: params.caseNumber,
+        rgyear: params.year,
+        captcha: captchaText,
+      })
+
+      const res = await fetch(`${HC_BASE}/cases_qry/index_qry.php`, {
+        method: 'POST',
+        headers: {
+          ...BROWSER_HEADERS,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Cookie: jar.header(),
+          Referer: `${HC_BASE}/main.php`,
+        },
+        body: body.toString(),
+      })
+
+      const raw = (await res.text()).replace(/^\ufeff/, '')
+      if (raw.toLowerCase().includes('invalid captcha')) {
+        await delay(RETRY_DELAY_MS * (attempt + 1))
+        continue
+      }
+
+      let jsonData: Record<string, string> = {}
+      try { jsonData = JSON.parse(raw) as Record<string, string> } catch { jsonData = { con: raw } }
+      if (jsonData.Error?.trim()) return null
+
+      return parseHCHTML(jsonData.con || raw, '')
+    } catch (err) {
+      console.error(`HC case number attempt ${attempt + 1}:`, err)
+      await delay(RETRY_DELAY_MS)
+    }
+  }
+  return null
+}
+
+export async function searchHCByDiaryNumber(params: {
+  court: string
+  diaryNumber: string
+  year: string
+  benchCode?: string
+}): Promise<WebCaseResult | null> {
+  const courtKey = params.court.substring(0, 2).toUpperCase()
+  const stateCode = HC_STATE_CODES[courtKey] || '7'
+
+  for (let attempt = 0; attempt < MAX_CAPTCHA_RETRIES; attempt++) {
+    const session = await hcSessionAndCaptcha(stateCode)
+    if (!session) continue
+    const { jar, captchaText } = session
+
+    try {
+      const body = new URLSearchParams({
+        state_code: stateCode,
+        bench_code: params.benchCode || '1',
+        action_code: 'showRecords',
+        search_type: 'diary_no',
+        diary_no: params.diaryNumber,
+        rgyear: params.year,
+        captcha: captchaText,
+      })
+
+      const res = await fetch(`${HC_BASE}/cases_qry/index_qry.php`, {
+        method: 'POST',
+        headers: {
+          ...BROWSER_HEADERS,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Cookie: jar.header(),
+          Referer: `${HC_BASE}/main.php`,
+        },
+        body: body.toString(),
+      })
+
+      const raw = (await res.text()).replace(/^\ufeff/, '')
+      if (raw.toLowerCase().includes('invalid captcha')) {
+        await delay(RETRY_DELAY_MS * (attempt + 1))
+        continue
+      }
+
+      let jsonData: Record<string, string> = {}
+      try { jsonData = JSON.parse(raw) as Record<string, string> } catch { jsonData = { con: raw } }
+      if (jsonData.Error?.trim()) return null
+
+      return parseHCHTML(jsonData.con || raw, '')
+    } catch (err) {
+      console.error(`HC diary number attempt ${attempt + 1}:`, err)
+      await delay(RETRY_DELAY_MS)
+    }
+  }
+  return null
+}
+
 // ─── Main entry point ─────────────────────────────────────────────────────────
 
 /**
