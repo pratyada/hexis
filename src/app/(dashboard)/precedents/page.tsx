@@ -77,8 +77,19 @@ export default function PrecedentsPage() {
   const [aiLoading, setAiLoading] = useState(false)
   const [selected, setSelected] = useState<Precedent | null>(null)
 
-  // CNR Search state
+  // Court Records search state
+  const [searchMode, setSearchMode] = useState<'cnr' | 'case_number' | 'diary_number'>('cnr')
   const [cnr, setCnr] = useState('')
+  // Case number search
+  const [hcCourt, setHcCourt] = useState('delhi')
+  const [hcCaseType, setHcCaseType] = useState('W.P.(C)')
+  const [hcCaseNumber, setHcCaseNumber] = useState('')
+  const [hcYear, setHcYear] = useState(new Date().getFullYear().toString())
+  // Diary number search
+  const [diaryNumber, setDiaryNumber] = useState('')
+  const [diaryYear, setDiaryYear] = useState(new Date().getFullYear().toString())
+  const [diaryCourt, setDiaryCourt] = useState('delhi')
+
   const [cnrResult, setCnrResult] = useState<CNRResult | null>(null)
   const [cnrLoading, setCnrLoading] = useState(false)
   const [cnrError, setCnrError] = useState('')
@@ -123,15 +134,25 @@ export default function PrecedentsPage() {
     }
   }
 
-  async function handleCNRSearch(e: React.FormEvent) {
+  async function handleSearch(e: React.FormEvent) {
     e.preventDefault()
-    if (!cnr.trim()) return
     setCnrLoading(true)
     setCnrError('')
     setCnrResult(null)
     setCnrTab('details')
     try {
-      const res = await fetch(`/api/ecourts/cnr?cnr=${encodeURIComponent(cnr.trim())}`)
+      let url = ''
+      if (searchMode === 'cnr') {
+        if (!cnr.trim()) { setCnrLoading(false); return }
+        url = `/api/ecourts/search?type=cnr&cnr=${encodeURIComponent(cnr.trim())}`
+      } else if (searchMode === 'case_number') {
+        if (!hcCaseNumber.trim()) { setCnrLoading(false); return }
+        url = `/api/ecourts/search?type=case_number&court=${hcCourt}&caseType=${encodeURIComponent(hcCaseType)}&caseNumber=${hcCaseNumber}&year=${hcYear}`
+      } else {
+        if (!diaryNumber.trim()) { setCnrLoading(false); return }
+        url = `/api/ecourts/search?type=diary_number&court=${diaryCourt}&diaryNumber=${diaryNumber}&year=${diaryYear}`
+      }
+      const res = await fetch(url)
       const json = await res.json()
       if (!res.ok) {
         setCnrError(json.hint || json.error || 'Lookup failed')
@@ -189,7 +210,7 @@ export default function PrecedentsPage() {
       <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit mb-6 flex-wrap">
         {[
           { id: 'database' as Tab, label: 'Case Law Database', icon: BookOpen },
-          { id: 'cnr' as Tab, label: 'CNR Case Search', icon: Hash },
+          { id: 'cnr' as Tab, label: 'Court Records Search', icon: Hash },
           { id: 'causelist' as Tab, label: 'Cause List', icon: Calendar },
         ].map((t) => {
           const Icon = t.icon
@@ -388,29 +409,145 @@ export default function PrecedentsPage() {
           <div className="lg:col-span-2 space-y-5">
             {/* Search form */}
             <div className="hexis-card p-6">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-4">
                 <Hash className="w-4 h-4 text-hexis-navy" />
-                <h2 className="text-sm font-semibold text-gray-800">Search by CNR Number</h2>
+                <h2 className="text-sm font-semibold text-gray-800">Search eCourts</h2>
               </div>
-              <p className="text-xs text-gray-400 mb-4">
-                Case Number Record (CNR) uniquely identifies any case across India's courts.
-                Format: <span className="font-mono bg-gray-100 px-1 rounded">DLHC010012345672024</span>
-              </p>
-              <form onSubmit={handleCNRSearch} className="flex flex-col sm:flex-row gap-3">
-                <input
-                  value={cnr}
-                  onChange={(e) => setCnr(e.target.value.toUpperCase())}
-                  placeholder="Enter CNR number e.g. DLHC010012345672024"
-                  className="form-input flex-1 font-mono tracking-wider"
-                  maxLength={20}
-                />
+
+              {/* Search mode switcher */}
+              <div className="flex gap-1 p-1 bg-gray-100 rounded-lg w-fit mb-5 text-xs">
+                {[
+                  { id: 'cnr' as const, label: 'CNR Number', hint: 'District Courts' },
+                  { id: 'case_number' as const, label: 'Case Number', hint: 'High Courts' },
+                  { id: 'diary_number' as const, label: 'Diary Number', hint: 'High Courts' },
+                ].map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => { setSearchMode(m.id); setCnrResult(null); setCnrError('') }}
+                    className={`px-3 py-1.5 rounded-md font-medium transition-all ${
+                      searchMode === m.id ? 'bg-white text-hexis-navy shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {m.label}
+                    <span className="hidden sm:inline text-gray-400 font-normal"> · {m.hint}</span>
+                  </button>
+                ))}
+              </div>
+
+              <form onSubmit={handleSearch} className="space-y-3">
+                {searchMode === 'cnr' && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-2">
+                      CNR uniquely identifies District Court cases.
+                      Format: <span className="font-mono bg-gray-100 px-1 rounded">DLDC010012345672024</span>
+                    </p>
+                    <input
+                      value={cnr}
+                      onChange={(e) => setCnr(e.target.value.toUpperCase())}
+                      placeholder="e.g. DLDC010012345672024"
+                      className="form-input font-mono tracking-wider"
+                      maxLength={20}
+                    />
+                  </div>
+                )}
+
+                {searchMode === 'case_number' && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-gray-400">Search High Court by case type, number and year.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="form-label">High Court</label>
+                        <select value={hcCourt} onChange={(e) => setHcCourt(e.target.value)} className="form-input">
+                          <option value="delhi">Delhi High Court</option>
+                          <option value="bombay">Bombay High Court</option>
+                          <option value="madras">Madras High Court</option>
+                          <option value="calcutta">Calcutta High Court</option>
+                          <option value="allahabad">Allahabad High Court</option>
+                          <option value="karnataka">Karnataka High Court</option>
+                          <option value="gujarat">Gujarat High Court</option>
+                          <option value="telangana">Telangana High Court</option>
+                          <option value="rajasthan">Rajasthan High Court</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="form-label">Case Type</label>
+                        <select value={hcCaseType} onChange={(e) => setHcCaseType(e.target.value)} className="form-input">
+                          {['W.P.(C)', 'W.P.(Crl)', 'CRL.M.C.', 'CRL.A.', 'CS(OS)', 'CS(COMM)', 'FAO', 'FAO(OS)', 'ITA', 'LPA', 'RFA', 'RSA', 'MAC.APP.', 'OMP', 'ARB.P.', 'EX.P.', 'BAIL APPL.', 'CRL.M.A.'].map((t) => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="form-label">Case Number</label>
+                        <input
+                          value={hcCaseNumber}
+                          onChange={(e) => setHcCaseNumber(e.target.value.replace(/\D/g, ''))}
+                          placeholder="e.g. 12345"
+                          className="form-input"
+                        />
+                      </div>
+                      <div>
+                        <label className="form-label">Year</label>
+                        <input
+                          value={hcYear}
+                          onChange={(e) => setHcYear(e.target.value)}
+                          placeholder="e.g. 2024"
+                          className="form-input"
+                          maxLength={4}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {searchMode === 'diary_number' && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-gray-400">Search High Court by diary/filing number assigned at the time of filing.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="form-label">High Court</label>
+                        <select value={diaryCourt} onChange={(e) => setDiaryCourt(e.target.value)} className="form-input">
+                          <option value="delhi">Delhi High Court</option>
+                          <option value="bombay">Bombay High Court</option>
+                          <option value="madras">Madras High Court</option>
+                          <option value="calcutta">Calcutta High Court</option>
+                          <option value="allahabad">Allahabad High Court</option>
+                          <option value="karnataka">Karnataka High Court</option>
+                          <option value="gujarat">Gujarat High Court</option>
+                          <option value="telangana">Telangana High Court</option>
+                          <option value="rajasthan">Rajasthan High Court</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="form-label">Diary Number</label>
+                        <input
+                          value={diaryNumber}
+                          onChange={(e) => setDiaryNumber(e.target.value.replace(/\D/g, ''))}
+                          placeholder="e.g. 98765"
+                          className="form-input"
+                        />
+                      </div>
+                      <div>
+                        <label className="form-label">Year</label>
+                        <input
+                          value={diaryYear}
+                          onChange={(e) => setDiaryYear(e.target.value)}
+                          placeholder="e.g. 2024"
+                          className="form-input"
+                          maxLength={4}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  disabled={cnrLoading || !cnr.trim()}
-                  className="btn-primary disabled:opacity-60 sm:w-auto justify-center"
+                  disabled={cnrLoading}
+                  className="btn-primary disabled:opacity-60 w-full sm:w-auto justify-center"
                 >
                   {cnrLoading ? (
-                    <><div className="w-4 h-4 border-2 border-hexis-gold/30 border-t-hexis-gold rounded-full animate-spin" /> Searching...</>
+                    <><div className="w-4 h-4 border-2 border-hexis-gold/30 border-t-hexis-gold rounded-full animate-spin" /> Searching eCourts...</>
                   ) : (
                     <><Search className="w-4 h-4" /> Search</>
                   )}
@@ -590,30 +727,39 @@ export default function PrecedentsPage() {
 
           {/* Right: info card */}
           <div className="space-y-4">
-            <div className="hexis-card p-5">
-              <div className="flex items-center gap-2 mb-3">
+            <div className="hexis-card p-5 space-y-4">
+              <div className="flex items-center gap-2">
                 <Info className="w-4 h-4 text-blue-500" />
-                <h3 className="text-sm font-semibold text-gray-800">How CNR Works</h3>
+                <h3 className="text-sm font-semibold text-gray-800">Which search to use?</h3>
               </div>
-              <div className="space-y-3 text-xs text-gray-600">
-                <p>CNR (Case Number Record) is a unique 16-digit identifier assigned to every case in India's courts by NIC.</p>
-                <div className="bg-gray-50 rounded-lg p-3 font-mono">
-                  <p className="font-bold text-hexis-navy mb-1">DLHC 01 001234 567 2024</p>
-                  <p className="text-gray-500 text-[10px]">State · Court · Number · Check · Year</p>
+              <div className="space-y-3 text-xs">
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <p className="font-semibold text-blue-800 mb-1">CNR Number</p>
+                  <p className="text-blue-600">Best for District Courts. Format: <span className="font-mono">DLDC010012345672024</span></p>
                 </div>
-                {[
-                  { code: 'DL', label: 'Delhi' },
-                  { code: 'MH', label: 'Maharashtra' },
-                  { code: 'KA', label: 'Karnataka' },
-                  { code: 'TN', label: 'Tamil Nadu' },
-                  { code: 'UP', label: 'Uttar Pradesh' },
-                ].map((s) => (
-                  <div key={s.code} className="flex items-center justify-between">
-                    <span className="font-mono bg-hexis-navy/10 text-hexis-navy px-1.5 py-0.5 rounded text-[11px]">{s.code}</span>
-                    <span className="text-gray-500">{s.label}</span>
-                    <ChevronRight className="w-3 h-3 text-gray-300" />
-                  </div>
-                ))}
+                <div className="p-3 bg-purple-50 rounded-lg">
+                  <p className="font-semibold text-purple-800 mb-1">Case Number</p>
+                  <p className="text-purple-600">Best for High Courts. You need the case type (W.P.(C), CRL.M.C. etc.), number and year.</p>
+                </div>
+                <div className="p-3 bg-amber-50 rounded-lg">
+                  <p className="font-semibold text-amber-800 mb-1">Diary Number</p>
+                  <p className="text-amber-600">The filing number assigned at the time of submission. Use when you don&apos;t have a case number yet.</p>
+                </div>
+                <div className="pt-1 space-y-1">
+                  {[
+                    { code: 'DL', label: 'Delhi' },
+                    { code: 'MH', label: 'Maharashtra' },
+                    { code: 'KA', label: 'Karnataka' },
+                    { code: 'TN', label: 'Tamil Nadu' },
+                    { code: 'UP', label: 'Uttar Pradesh' },
+                  ].map((s) => (
+                    <div key={s.code} className="flex items-center gap-2 text-gray-500">
+                      <span className="font-mono bg-hexis-navy/10 text-hexis-navy px-1.5 py-0.5 rounded text-[11px]">{s.code}</span>
+                      <ChevronRight className="w-3 h-3 text-gray-300" />
+                      <span>{s.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
