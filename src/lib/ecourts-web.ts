@@ -73,7 +73,7 @@ async function solveCaptcha(imageBuffer: Buffer): Promise<string> {
       // Whitelist only alphanumeric — eCourts CAPTCHA is 6 chars
       tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
       // Single word mode gives best results for short CAPTCHAs
-      tessedit_pageseg_mode: '8' as Parameters['tessedit_pageseg_mode'],
+      tessedit_pageseg_mode: '8',
     })
 
     const { data: { text } } = await worker.recognize(imageBuffer)
