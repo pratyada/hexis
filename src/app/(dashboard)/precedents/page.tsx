@@ -20,43 +20,46 @@ interface Precedent {
   practiceArea: string | null
 }
 
-interface ECourtsCase {
-  cnr_number: string
-  case_type: string
-  filing_number: string
-  filing_date: string
-  registration_number: string
-  registration_date: string
-  case_status: string
-  next_hearing_date: string
-  stage_of_case: string
-  court_number: string
+interface CaseDetails {
+  cnrNumber: string
+  caseType: string
+  filingNumber: string
+  filingDate: string
+  registrationNumber: string
+  registrationDate: string
+  status: string
+  stage: string
+  nextHearingDate: string
+  courtNumber: string
   judge: string
-  petitioner_advocate: string
-  respondent_advocate: string
-  nature_of_disposal: string | null
-  date_of_decision: string | null
+  petitioner: string
+  respondent: string
+  petitionerAdvocate: string
+  respondentAdvocate: string
+  dateOfDecision: string
+  natureOfDisposal: string
 }
 
-interface ECourtsOrder {
-  order_date: string
-  order_number: string
-  order_link: string
+interface WebHearing {
+  date: string
+  purpose: string
+  causeListType: string
+  courtNumber: string
+  judge: string
+  businessOnDate: string
 }
 
-interface ECourtsHearing {
-  hearing_date: string
-  purpose_of_hearing: string
-  cause_list_type: string
-  court_number: string
-  judge: string
-  business_on_date: string
+interface WebOrder {
+  date: string
+  number: string
+  pdfUrl: string
 }
 
 interface CNRResult {
-  case_details: ECourtsCase
-  history_of_hearings: ECourtsHearing[]
-  orders: ECourtsOrder[]
+  caseDetails: CaseDetails
+  hearings: WebHearing[]
+  orders: WebOrder[]
+  source: string
 }
 
 type Tab = 'database' | 'cnr' | 'causelist'
@@ -419,19 +422,13 @@ export default function PrecedentsPage() {
             {cnrError && (
               <div className="hexis-card p-5 border-amber-200 bg-amber-50">
                 <div className="flex gap-3">
-                  {cnrError.includes('NIC') || cnrError.includes('API') ? (
-                    <Info className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                  )}
+                  <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-amber-800">{cnrError}</p>
-                    {cnrError.includes('NIC') && (
-                      <p className="text-xs text-amber-600 mt-1">
-                        Register for API access at services.ecourts.gov.in or contact NIC for an app token.
-                        Add it as <span className="font-mono">NIC_ECOURTS_API_KEY</span> in Vercel env vars.
-                      </p>
-                    )}
+                    <p className="text-xs text-amber-600 mt-1">
+                      CAPTCHA solving may have failed — the eCourts portal uses image-based CAPTCHA.
+                      Please try again; it retries automatically up to 3 times.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -446,24 +443,27 @@ export default function PrecedentsPage() {
                     <div>
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <span className="font-mono text-xs bg-hexis-navy/10 text-hexis-navy px-2 py-0.5 rounded font-semibold">
-                          {cnrResult.case_details.cnr_number}
+                          {cnrResult.caseDetails.cnrNumber}
                         </span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor(cnrResult.case_details.case_status)}`}>
-                          {cnrResult.case_details.case_status}
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor(cnrResult.caseDetails.status)}`}>
+                          {cnrResult.caseDetails.status}
+                        </span>
+                        <span className="text-[10px] text-gray-400 uppercase tracking-wider">
+                          via {cnrResult.source === 'hcservices' ? 'HC Services' : 'District Courts'}
                         </span>
                       </div>
                       <p className="text-sm font-semibold text-gray-800">
-                        {cnrResult.case_details.case_type} · {cnrResult.case_details.registration_number}
+                        {cnrResult.caseDetails.caseType} · {cnrResult.caseDetails.registrationNumber}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        Filed: {cnrResult.case_details.filing_date} · Court No. {cnrResult.case_details.court_number}
+                        Filed: {cnrResult.caseDetails.filingDate} · Court No. {cnrResult.caseDetails.courtNumber}
                       </p>
                     </div>
-                    {cnrResult.case_details.next_hearing_date && (
+                    {cnrResult.caseDetails.nextHearingDate && (
                       <div className="text-right">
                         <p className="text-xs text-gray-400">Next Hearing</p>
-                        <p className="text-sm font-bold text-hexis-navy">{cnrResult.case_details.next_hearing_date}</p>
-                        <p className="text-xs text-gray-500">{cnrResult.case_details.stage_of_case}</p>
+                        <p className="text-sm font-bold text-hexis-navy">{cnrResult.caseDetails.nextHearingDate}</p>
+                        <p className="text-xs text-gray-500">{cnrResult.caseDetails.stage}</p>
                       </div>
                     )}
                   </div>
@@ -473,7 +473,7 @@ export default function PrecedentsPage() {
                 <div className="flex border-b border-gray-100">
                   {[
                     { id: 'details' as const, label: 'Case Details', icon: FileText },
-                    { id: 'hearings' as const, label: `Hearings (${cnrResult.history_of_hearings.length})`, icon: Clock },
+                    { id: 'hearings' as const, label: `Hearings (${cnrResult.hearings.length})`, icon: Clock },
                     { id: 'orders' as const, label: `Orders (${cnrResult.orders.length})`, icon: Gavel },
                   ].map((t) => {
                     const Icon = t.icon
@@ -499,15 +499,17 @@ export default function PrecedentsPage() {
                   {cnrTab === 'details' && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {[
-                        { label: 'Judge', value: cnrResult.case_details.judge },
-                        { label: 'Stage', value: cnrResult.case_details.stage_of_case },
-                        { label: 'Filing Date', value: cnrResult.case_details.filing_date },
-                        { label: 'Registration Date', value: cnrResult.case_details.registration_date },
-                        { label: "Petitioner's Advocate", value: cnrResult.case_details.petitioner_advocate },
-                        { label: "Respondent's Advocate", value: cnrResult.case_details.respondent_advocate },
-                        ...(cnrResult.case_details.date_of_decision ? [
-                          { label: 'Decision Date', value: cnrResult.case_details.date_of_decision },
-                          { label: 'Nature of Disposal', value: cnrResult.case_details.nature_of_disposal || '—' },
+                        { label: 'Petitioner', value: cnrResult.caseDetails.petitioner },
+                        { label: 'Respondent', value: cnrResult.caseDetails.respondent },
+                        { label: 'Judge', value: cnrResult.caseDetails.judge },
+                        { label: 'Stage', value: cnrResult.caseDetails.stage },
+                        { label: 'Filing Date', value: cnrResult.caseDetails.filingDate },
+                        { label: 'Registration Date', value: cnrResult.caseDetails.registrationDate },
+                        { label: "Petitioner's Advocate", value: cnrResult.caseDetails.petitionerAdvocate },
+                        { label: "Respondent's Advocate", value: cnrResult.caseDetails.respondentAdvocate },
+                        ...(cnrResult.caseDetails.dateOfDecision ? [
+                          { label: 'Decision Date', value: cnrResult.caseDetails.dateOfDecision },
+                          { label: 'Nature of Disposal', value: cnrResult.caseDetails.natureOfDisposal || '—' },
                         ] : []),
                       ].map(({ label, value }) => (
                         <div key={label}>
@@ -520,26 +522,26 @@ export default function PrecedentsPage() {
 
                   {cnrTab === 'hearings' && (
                     <div className="space-y-2 max-h-96 overflow-y-auto">
-                      {cnrResult.history_of_hearings.length === 0 ? (
+                      {cnrResult.hearings.length === 0 ? (
                         <p className="text-gray-400 text-sm text-center py-6">No hearing history available</p>
                       ) : (
-                        cnrResult.history_of_hearings.map((h, i) => (
+                        cnrResult.hearings.map((h, i) => (
                           <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
                             <div className="text-center min-w-[44px] flex-shrink-0">
                               <p className="text-sm font-bold text-gray-800">
-                                {h.hearing_date?.split('-')[0]}
+                                {h.date?.split('-')[0]}
                               </p>
                               <p className="text-[10px] text-gray-400 uppercase">
-                                {h.hearing_date?.split('-')[1]}
+                                {h.date?.split('-')[1]}
                               </p>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-gray-800">{h.purpose_of_hearing}</p>
+                              <p className="text-xs font-medium text-gray-800">{h.purpose}</p>
                               <p className="text-xs text-gray-400 mt-0.5">
-                                {h.cause_list_type} · Court {h.court_number} · {h.judge}
+                                {h.causeListType} · Court {h.courtNumber} · {h.judge}
                               </p>
-                              {h.business_on_date && (
-                                <p className="text-xs text-gray-500 mt-1 italic">{h.business_on_date}</p>
+                              {h.businessOnDate && (
+                                <p className="text-xs text-gray-500 mt-1 italic">{h.businessOnDate}</p>
                               )}
                             </div>
                           </div>
@@ -560,15 +562,15 @@ export default function PrecedentsPage() {
                                 <Gavel className="w-4 h-4 text-hexis-navy" />
                               </div>
                               <div className="min-w-0">
-                                <p className="text-xs font-medium text-gray-800">Order dated {o.order_date}</p>
-                                {o.order_number && (
-                                  <p className="text-xs text-gray-400">Order No. {o.order_number}</p>
+                                <p className="text-xs font-medium text-gray-800">Order dated {o.date}</p>
+                                {o.number && (
+                                  <p className="text-xs text-gray-400">Order No. {o.number}</p>
                                 )}
                               </div>
                             </div>
-                            {o.order_link && (
+                            {o.pdfUrl && (
                               <a
-                                href={o.order_link}
+                                href={o.pdfUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-1 text-xs text-hexis-navy hover:underline flex-shrink-0"
@@ -621,7 +623,7 @@ export default function PrecedentsPage() {
                 <h3 className="text-sm font-semibold text-hexis-gold">Data Source</h3>
               </div>
               <p className="text-xs text-gray-300 leading-relaxed">
-                Live data from NIC eCourts portal — the same source used by bharat-courts library. Covers 25 High Courts and 700+ District Courts across India.
+                Live data scraped directly from NIC eCourts portal — same approach as the bharat-courts Python library. CAPTCHA is solved automatically in the background using Tesseract OCR. No API key required.
               </p>
               <div className="mt-3 space-y-1.5">
                 {[

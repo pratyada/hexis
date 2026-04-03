@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSessionFromRequest } from '@/lib/auth'
-import { getCauseList } from '@/lib/ecourts'
+import { webGetCauseList } from '@/lib/ecourts-web'
 
 /**
- * GET /api/ecourts/causelist?court=delhi&date=2024-04-02&type=civil
- * Fetches today's (or a given date's) cause list for a court
- * Equivalent to bharat-courts HCServicesClient.cause_list()
+ * GET /api/ecourts/causelist?court=delhi&date=02-04-2026&type=civil
+ *
+ * Fetches daily cause list from NIC eCourts HC Services portal.
+ * No API key required — CAPTCHA handled automatically via Tesseract OCR.
  */
 export async function GET(req: NextRequest) {
   const session = await getSessionFromRequest(req)
@@ -13,23 +14,24 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const court = searchParams.get('court') || 'delhi'
-  const date = searchParams.get('date') || ''          // DD-MM-YYYY; empty = today
-  const type = searchParams.get('type') || 'civil'    // civil | criminal
-
-  const nicKey = process.env.NIC_ECOURTS_API_KEY
-  if (!nicKey) {
-    return NextResponse.json({
-      error: 'NIC eCourts API not configured',
-      hint: 'Add NIC_ECOURTS_API_KEY to environment variables.',
-      configRequired: true,
-    }, { status: 503 })
-  }
+  const date = searchParams.get('date') || ''       // DD-MM-YYYY; empty = today
+  const type = searchParams.get('type') || 'civil'
 
   try {
-    const data = await getCauseList({ court, date, civil: type === 'civil' })
-    return NextResponse.json({ data, court, date: date || 'today' })
+    const entries = await webGetCauseList({
+      court,
+      date,
+      civil: type === 'civil',
+    })
+
+    return NextResponse.json({
+      data: entries,
+      court,
+      date: date || 'today',
+      count: entries.length,
+    })
   } catch (error) {
     console.error('Cause list error:', error)
-    return NextResponse.json({ error: 'Failed to fetch cause list' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch cause list — please retry' }, { status: 500 })
   }
 }

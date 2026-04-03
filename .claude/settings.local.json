@@ -35,7 +35,11 @@
       "Bash(git:*)",
       "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_soyFgU5f7lXi@ep-super-wildflower-aneamxw7.c-6.us-east-1.aws.neon.tech/neondb?sslmode=require\" npx prisma db push 2>&1)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:hcservices.ecourts.gov.in)",
+      "WebFetch(domain:services.ecourts.gov.in)",
+      "WebSearch",
+      "WebFetch(domain:api.github.com)"
     ]
   }
 }
