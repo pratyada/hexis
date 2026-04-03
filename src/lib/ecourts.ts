@@ -195,6 +195,90 @@ export function parseECourtsData(data: ECourtsResponse) {
   }
 }
 
+export interface ECaurtsCauseListEntry {
+  serialNo: string
+  caseNumber: string
+  petitioner: string
+  respondent: string
+  advocatePetitioner: string
+  advocateRespondent: string
+  courtNo: string
+  judge: string
+}
+
+export interface ECourtsOrderDetail {
+  orderDate: string
+  orderNumber: string
+  orderLink: string
+  judge?: string
+}
+
+/**
+ * Fetch cause list for a High Court
+ * Equivalent to bharat-courts HCServicesClient.cause_list()
+ */
+export async function getCauseList(params: {
+  court: string
+  date?: string   // DD-MM-YYYY; empty = today
+  civil?: boolean
+  benchCode?: string
+}): Promise<ECaurtsCauseListEntry[]> {
+  try {
+    const token = await getToken()
+
+    const courtCodes: Record<string, string> = {
+      delhi: '7',
+      bombay: '13',
+      madras: '23',
+      calcutta: '27',
+      allahabad: '25',
+      karnataka: '10',
+      gujarat: '8',
+      telangana: '24',
+      rajasthan: '20',
+    }
+    const courtCode = courtCodes[params.court.toLowerCase()] || '7'
+
+    const res = await fetch(`${ECOURTS_BASE_URL}/causelist`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        state_code: courtCode,
+        bench_code: params.benchCode || '1',
+        causelist_type: params.civil !== false ? 'civil' : 'criminal',
+        causelist_date: params.date || '',
+        apptoken: token,
+      }),
+    })
+
+    if (!res.ok) return []
+    const data = await res.json() as { causelist?: ECaurtsCauseListEntry[] }
+    return data.causelist || []
+  } catch (error) {
+    console.error('eCourts cause list error:', error)
+    return []
+  }
+}
+
+/**
+ * Fetch all orders for a case by CNR
+ * Equivalent to bharat-courts HCServicesClient.court_orders()
+ */
+export async function getCaseOrders(cnrNumber: string): Promise<ECourtsOrderDetail[]> {
+  try {
+    const data = await getCaseByCNR(cnrNumber)
+    if (!data) return []
+    return (data.orders || []).map((o) => ({
+      orderDate: o.order_date,
+      orderNumber: o.order_number,
+      orderLink: o.order_link,
+    }))
+  } catch (error) {
+    console.error('eCourts orders error:', error)
+    return []
+  }
+}
+
 /**
  * State codes for eCourts API
  */
