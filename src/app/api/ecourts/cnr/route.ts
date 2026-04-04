@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSessionFromRequest } from '@/lib/auth'
-import { webSearchByCNR } from '@/lib/ecourts-web'
+import { clientSearchByCNR } from '@/lib/ecourts-client'
 
-/**
- * GET /api/ecourts/cnr?cnr=DLHC010012345672024
- *
- * Searches NIC eCourts web portal directly — no API key required.
- * Handles CAPTCHA automatically using Tesseract OCR (same approach as
- * the bharat-courts Python library). Retries up to 3× on CAPTCHA failure.
- */
 export async function GET(req: NextRequest) {
   const session = await getSessionFromRequest(req)
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -16,9 +9,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const cnr = searchParams.get('cnr')?.trim().toUpperCase()
 
-  if (!cnr) {
-    return NextResponse.json({ error: 'CNR number is required' }, { status: 400 })
-  }
+  if (!cnr) return NextResponse.json({ error: 'CNR number is required' }, { status: 400 })
 
   if (!/^[A-Z]{4}\d{7,16}$/.test(cnr)) {
     return NextResponse.json({
@@ -28,8 +19,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const result = await webSearchByCNR(cnr)
-
+    const result = await clientSearchByCNR(cnr)
     if (!result) {
       return NextResponse.json({
         error: 'Case not found on eCourts',
@@ -37,7 +27,6 @@ export async function GET(req: NextRequest) {
         cnr,
       }, { status: 404 })
     }
-
     return NextResponse.json({ data: result, cnr })
   } catch (error) {
     console.error('CNR lookup error:', error)

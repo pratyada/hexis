@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSessionFromRequest } from '@/lib/auth'
-import {
-  webSearchByCNR,
-  searchHCByCaseNumber,
-  searchHCByDiaryNumber,
-} from '@/lib/ecourts-web'
+import { clientSearch, clientSearchByCNR } from '@/lib/ecourts-client'
 
 /**
  * GET /api/ecourts/search
- *
- * Unified eCourts search — no API key required.
- * CAPTCHA solved automatically via Tesseract OCR (up to 3 retries).
- *
  * ?type=cnr&cnr=DLHC010012345672024
  * ?type=case_number&court=delhi&caseType=W.P.(C)&caseNumber=1234&year=2024
  * ?type=diary_number&court=delhi&diaryNumber=5678&year=2024
@@ -33,7 +25,7 @@ export async function GET(req: NextRequest) {
           hint: 'Example: DLHC010012345672024 — 4 letters then digits',
         }, { status: 400 })
       }
-      const result = await webSearchByCNR(cnr)
+      const result = await clientSearchByCNR(cnr)
       if (!result) return NextResponse.json({ error: 'Case not found — CAPTCHA may have failed, please retry', cnr }, { status: 404 })
       return NextResponse.json({ data: result, cnr })
     }
@@ -46,7 +38,7 @@ export async function GET(req: NextRequest) {
       if (!court || !caseType || !caseNumber || !year) {
         return NextResponse.json({ error: 'court, caseType, caseNumber and year are required' }, { status: 400 })
       }
-      const result = await searchHCByCaseNumber({ court, caseType, caseNumber, year })
+      const result = await clientSearch({ type: 'case_number', court, caseType, caseNumber, year })
       if (!result) return NextResponse.json({ error: 'Case not found — please retry' }, { status: 404 })
       return NextResponse.json({ data: result })
     }
@@ -58,7 +50,7 @@ export async function GET(req: NextRequest) {
       if (!court || !diaryNumber || !year) {
         return NextResponse.json({ error: 'court, diaryNumber and year are required' }, { status: 400 })
       }
-      const result = await searchHCByDiaryNumber({ court, diaryNumber, year })
+      const result = await clientSearch({ type: 'diary_number', court, diaryNumber: diaryNumber, year })
       if (!result) return NextResponse.json({ error: 'Case not found — please retry' }, { status: 404 })
       return NextResponse.json({ data: result })
     }

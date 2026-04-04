@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSessionFromRequest } from '@/lib/auth'
-import { webGetCauseList } from '@/lib/ecourts-web'
+import { clientGetCauseList } from '@/lib/ecourts-client'
 
 /**
  * GET /api/ecourts/causelist?court=delhi&date=02-04-2026&type=civil
- *
- * Fetches daily cause list from NIC eCourts HC Services portal.
- * No API key required — CAPTCHA handled automatically via Tesseract OCR.
  */
 export async function GET(req: NextRequest) {
   const session = await getSessionFromRequest(req)
@@ -14,16 +11,11 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url)
   const court = searchParams.get('court') || 'delhi'
-  const date = searchParams.get('date') || ''       // DD-MM-YYYY; empty = today
+  const date = searchParams.get('date') || ''
   const type = searchParams.get('type') || 'civil'
 
   try {
-    const entries = await webGetCauseList({
-      court,
-      date,
-      civil: type === 'civil',
-    })
-
+    const entries = await clientGetCauseList({ court, date, type })
     return NextResponse.json({
       data: entries,
       court,
