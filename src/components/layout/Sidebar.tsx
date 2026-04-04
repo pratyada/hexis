@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { JWTPayload } from '@/lib/auth'
+import { APP_VERSION, RELEASE_LABEL } from '@/lib/version'
 
 const navItems = [
   {
@@ -145,8 +146,8 @@ export function Sidebar({
       </nav>
 
       {/* User info */}
-      <div className="p-4 border-t border-white/5">
-        <div className="flex items-center gap-3 px-3 py-2">
+      <div className="border-t border-white/5">
+        <div className="flex items-center gap-3 px-7 py-3">
           <div className="w-8 h-8 rounded-full bg-hexis-gold/20 flex items-center justify-center flex-shrink-0">
             <span className="text-hexis-gold font-semibold text-sm">
               {session.name.charAt(0).toUpperCase()}
@@ -156,6 +157,11 @@ export function Sidebar({
             <p className="text-white text-sm font-medium truncate">{session.name}</p>
             <p className="text-gray-500 text-xs truncate capitalize">{session.role.toLowerCase()}</p>
           </div>
+        </div>
+        {/* Version badge */}
+        <div className="flex items-center justify-between px-7 pb-3">
+          <span className="text-[10px] text-gray-600 font-mono">v{APP_VERSION}</span>
+          <span className="text-[10px] text-gray-600">{RELEASE_LABEL}</span>
         </div>
       </div>
     </aside>

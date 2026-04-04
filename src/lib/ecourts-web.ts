@@ -219,13 +219,14 @@ export async function searchHCByCNR(cnr: string): Promise<WebCaseResult | null> 
       }
 
       // 4. Submit CNR search
+      // Fields from HC Services JS source (funViewCinoHistory in main.php):
+      // send_str_cino = "&captcha=...&cino=...&appFlag=web&action_code=fetchStateDistCourtNew&caseStatusSearchType=CNRNumber"
       const body = new URLSearchParams({
-        state_code: stateCode,
-        bench_code: '1',
-        action_code: 'showRecords',
-        search_type: 'cnr_number',
-        cnr_number: cnr,
         captcha: captchaText,
+        cino: cnr,
+        appFlag: 'web',
+        action_code: 'fetchStateDistCourtNew',
+        caseStatusSearchType: 'CNRNumber',
       })
 
       const searchRes = await fetch(`${HC_BASE}/cases_qry/index_qry.php`, {
